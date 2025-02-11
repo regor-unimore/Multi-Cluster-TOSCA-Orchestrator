@@ -2,7 +2,7 @@
 
 The **Orchestrator** is a key component of the system, responsible for managing and coordinating requests across multiple microservices when invoked as a _chain of microservices_. This component ensures that operations are executed in the correct sequence and that data is appropriately transferred between microservices.
 
-The Orchestrator invokes only the first two microservices of the chain, since the last two microservices (RVRPTW Solver and Route Compactor Solver) are subjectied to company restrictions.
+The Orchestrator invokes only the first two microservices in the chain, as the last two (RVRPTW Solver and Route Compactor Solver) are restricted by company policies.
 
 ---
 
