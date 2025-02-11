@@ -1,0 +1,59 @@
+services:
+  georeference:
+    build: georeference
+    image: georeference:latest
+    container_name: georeference_container
+    environment:
+      MINIO_HOST: "minio"
+      MINIO_PORT: "9000"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - minio
+
+  distance-time-calculator:
+    build: distance-time-calculator
+    image: distance-time-calculator:latest
+    container_name: distance_time_calculator_container
+    environment:
+      OSRM_SERVER_HOST: {OSRM_SERVER_HOST}
+      OSRM_SERVER_PORT: {OSRM_SERVER_PORT}
+      OSRM_SERVER_API: "/route/v1/driving/"
+      MINIO_HOST: "minio"
+      MINIO_PORT: "9000"
+    ports:
+      - "8081:8080"
+    depends_on:
+      - minio
+  
+  orchestrator:
+    build: orchestrator
+    image: orchestrator:latest
+    container_name: orchestrator_container
+    environment:
+      GEOREF_HOST: "georeference_container"
+      GEOREF_PORT: "8080"
+      GEOREF_API: "/api/v1/georef"
+      DM_HOST: "distance_time_calculator_container"
+      DM_PORT: "8080"
+      DM_API: "/api/v1/dm"
+      RESULT_HOST: {RESULT_HOST}
+      RESULT_PORT: {RESULT_PORT}
+      RESULT_API: "/callback"
+      ORCH_HOST: "orchestrator_container"
+      ORCH_PORT: "8080"
+      ORCH_API: "/api/v1/callback"
+    ports:
+      - "8085:8080"
+    depends_on:
+      - georeference
+      - distance-time-calculator
+      - minio
+
+  minio:
+    build: minio
+    image: minio:latest
+    container_name: minio_container
+    ports:
+      - "9000:9000"
+      - "9001:9001"

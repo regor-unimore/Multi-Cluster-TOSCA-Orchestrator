@@ -1,0 +1,317 @@
+openapi: 3.0.0
+info:
+  title: "TOSCA Orchestator"
+  description: "API for TOSCA Orchestrator"
+  version: '1.0'
+
+servers:
+  - url: /api/v1
+
+paths:
+  /georef:
+    post:
+      summary: Georeference addresses
+      operationId: georefPost
+      requestBody:
+        required: true
+        content: 
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/inputFormatGeoreference'
+                - $ref: '#/components/schemas/inputWithXls'
+          
+      responses:
+        200:
+          description: Addresses georeferenced successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/resolutionInlineGeoreference'
+                  - $ref: '#/components/schemas/id'
+                  - $ref: '#/components/schemas/url'
+                  - $ref: '#/components/schemas/xlsPath'
+        400:
+          description: One or more invalid addresses
+        404:
+          description: One or more addresses do not exist
+      
+  /georef/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID linked to a list of resolutions
+        required: true
+        schema:
+          type: string
+
+    get:
+      description: Returns the list of address resoultions linked to a given ID
+      operationId: georefIdGet
+      
+      responses:
+        200:
+          description: 'Success: ID exists'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/GeoreferenceResponse'
+                  - $ref: '#/components/schemas/resolutionInlineGeoreference'
+                  - $ref: '#/components/schemas/xlsPath'
+        400:
+          description: Invalid ID
+          
+        404:
+          description: ID does not exist, no resolutions found
+
+    delete:
+      description: Deletes resolutions' id
+      operationId: georefIdDelete
+      responses:
+        204:
+          description: Resolutions deleted
+        400:
+          description: Invalid ID
+        404:
+          description: ID does not exist, no resolutions will be deleted
+  
+  /dm:
+    post:
+      description: Returns the distance matrix of a given set of georeferenced addresses
+      operationId: dmPost
+      requestBody:
+        required: true
+        content:
+        
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/inputFormatDistanceMatrix'
+                - $ref: '#/components/schemas/inputWithXls'
+          
+      responses:
+        200:
+          description: Distances calculated correctly
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/id'
+                  - $ref: '#/components/schemas/url'
+                  - $ref: '#/components/schemas/xlsPath'
+        404:
+          description: Could not calculate one or more distances
+
+  /dm/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: ID linked to a calculated distance matrix
+        schema:
+          type: string
+        required: true
+
+    get:
+      description: Returns a distance matrix linked to a given ID
+      operationId: dmIdGet
+
+      responses:
+        200:
+          description: ID exists, getting the distance matrix
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DistanceTimeCalculatorResponse'
+                  - $ref: '#/components/schemas/resolutionInlineDistanceTimeCalculator'
+                  - $ref: '#/components/schemas/xlsPath'
+        400: 
+          description: Invalid ID
+        
+        404: 
+          description: ID does not exist, no matrices found
+
+    delete:
+      description: Deletes matrix' id and related file
+      operationId: dmIdDelete
+
+      responses:
+        204:
+          description: Matrix deleted
+        400:
+          description: Invalid ID
+        404:
+          description: ID does not exist, no matrices will be deleted
+  
+components:
+  schemas:
+  
+    inputFormatGeoreference:
+      type: object
+      properties:
+        resolutionType:
+          $ref: '#/components/schemas/resolutionType'
+        addressDescription:
+          $ref: '#/components/schemas/addressesList'
+          
+    inputWithXls:
+      type: object
+      properties:
+        resolutionType:
+          $ref: '#/components/schemas/resolutionType'
+        filePath:
+          $ref: '#/components/schemas/xlsPath'
+          
+    inputFormatDistanceMatrix:
+      type: object
+      properties:
+        resolutionType:
+          $ref: '#/components/schemas/resolutionType'
+        addresses:
+          $ref: '#/components/schemas/resolutionInlineGeoreference'
+    
+    resolutionType:
+      type: string
+      enum: [id, Inline, url]
+
+    addressesList:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+          address:
+            type: string
+          area:
+            type: string
+          district:
+            type: string
+          zipCode:
+            maximum: 98100
+            minimum: 10
+            type: integer
+          region:
+            type: string
+          country:
+            type: string
+          
+    resolutionInlineGeoreference:
+      type: array
+      items:
+        type: object
+        properties:
+          address:
+            type: string
+          latitude:
+            type: number
+            format: double
+          longitude:
+            type: number
+            format: double
+    
+    resolutionInlineDistanceTimeCalculator:
+      type: object
+      additionalProperties:
+        type: object
+        additionalProperties: 
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: number
+            
+      example:
+        "Via Pietro Vivarelli 10, 41125, Modena":
+          "Via Pietro Vivarelli 10, 41125, Modena": "-"
+          "Parco Area delle Scienze 59, 43124, Parma": [63.02, 3508.4]
+          "Via Giovanni Amendola 41, 42122, Reggio Emilia": [25.67, 2187.6]
+        "Parco Area delle Scienze 59, 43124, Parma":
+          "Via Pietro Vivarelli 10, 41125, Modena": [67.124, 3570.2]
+          "Parco Area delle Scienze 59, 43124, Parma": "-"
+          "Via Giovanni Amendola 41, 42122, Reggio Emilia": [40.864, 2631.2]
+        "Via Giovanni Amendola 41, 42122, Reggio Emilia":
+          "Via Pietro Vivarelli 10, 41125, Modena": [26.683, 2269.5]
+          "Parco Area delle Scienze 59, 43124, Parma": [40.825, 2520.5]
+          "Via Giovanni Amendola 41, 42122, Reggio Emilia": "-"
+    
+    distanceMatrix:
+      type: array
+      items:
+        type: array
+        items:
+          type: object
+          properties:
+            kmDistance:
+              type: number
+              format: float
+            time:
+              type: string
+    
+    id:
+      type: object
+      properties:
+        id: 
+          type: string
+          format: uuid
+      
+    url:
+      type: object
+      properties:
+        url: 
+          type: string
+          format: url
+      
+    xlsPath:
+      type: string
+      format: path
+      
+    Address:
+      type: object
+      properties:
+        address:
+          type: string
+          example: "Via Pietro Vivarelli 10, 41125, Modena"
+        latitude:
+          type: number
+          format: double
+          example: 44.629339731591
+        longitude:
+          type: number
+          format: double
+          example: 10.948345368238
+
+
+    ExtraVarsGeoreference:
+      type: object
+      properties:
+        input:
+          $ref: '#/components/schemas/inputFormatGeoreference'
+          
+    ExtraVarsDistanceTimeCalculator:
+      type: object
+      properties:
+        input:
+          $ref: '#/components/schemas/inputFormatDistanceMatrix'
+
+    GeoreferenceResponse:
+      type: object
+      properties:
+        output:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        extraVars:
+          $ref: '#/components/schemas/ExtraVarsGeoreference'
+    
+    DistanceTimeCalculatorResponse:
+      type: object
+      properties:
+        output:
+          type: array
+          items:
+            $ref: '#/components/schemas/resolutionInlineDistanceTimeCalculator'
+        extraVars:
+          $ref: '#/components/schemas/ExtraVarsDistanceTimeCalculator'
