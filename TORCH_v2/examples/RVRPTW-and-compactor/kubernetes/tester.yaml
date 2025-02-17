@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tester
+    context: template-name
+  name: tester-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tester
+      context: template-name
+  template:
+    metadata:
+      labels:
+        app: tester
+        context: template-name
+    spec:
+      containers:
+        - image: tester:v1.0.0
+          name: tester
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: testrunner
+spec:
+  type: NodePort
+  ports:
+  - name: http-8080
+    port: 8080
+    protocol: TCP
+    targetPort: 9088
+    nodePort: 31333
+  selector:
+    app: tester
+    context: template-name

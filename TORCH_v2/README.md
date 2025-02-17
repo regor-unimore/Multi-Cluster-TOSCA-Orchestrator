@@ -32,13 +32,7 @@ Currently, to use install TORCH_v2 you are required to perform specific configur
 ## Usage
 List of available examples to learn how to use TORCH_v2:
   
-- [My Solver & Georef](examples/my-solver-and-georef/my-solver-and-georef.md):  learn how you can use TORCH_v2 to deploy a distributed application made by two microservices on a Kuberentes Cluster
-- [CMD examples](examples/cmd-examples/): learn how you can specify custom command for your containers using TORCH_v2 (@TODO example with external scripts)
-- [Volumes](): learn how to provision volumes using TORCH_v2 @todo
-- [Multi-cluster examples](): learn how to use the Cluster and Federation type and their differences to model a multi-cluster infrastructure
-- [ESCALATION Pipeline](examples/RVRPTW-and-compactor/pipeline.md): deploy an ESCALATION pipeline with the RVRPTW Solver and the Route Compactor 
-- [ESCALATION Pipeline with Volumes](examples/TSP-and-OSRM//pipeline2.md): deploy an ESCALATION pipeline with a TSP Solver and with the provisioning of a local OSRM server
-- [ISCC2025](examples/iscc2025/): multiple templates used to test TORCH and collect data for ISCC 2025 conference
+- [Multi-cluster examples](examples/RVRPTW-and-compactor/pipeline.md): deploy a multi-cluster system using TORCH_v2
 
 ## Known limitation and difference wrt the original TORCH project
 TORCH_v2 is a work in progress and follow most the specification written in the [TOSCA Simple Profile 1.X](https://docs.oasis-open.org/tosca/TOSCA-Simple-Profile-YAML/v1.3/TOSCA-Simple-Profile-YAML-v1.3.html). TORCH_v2 support the TOSCA Simple Profile v1.3 with some limitation:

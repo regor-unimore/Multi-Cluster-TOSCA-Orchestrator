@@ -1,0 +1,19 @@
+version: '3.6'
+services:
+    my_solver:
+        container_name: my_solver
+        image: tester:v1.0.0
+        environment:
+            - port=9088
+            - service_addr=georef_module
+            - service_port=8080
+            - endpoint=/api/v1/georef
+        ports:
+            - 9088:9088
+        networks:
+         - test-net
+        
+networks:
+  test-net:
+    name: test-net
+    driver: bridge

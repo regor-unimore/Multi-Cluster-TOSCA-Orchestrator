@@ -1,0 +1,38 @@
+version: '3.6'
+services:
+    flowable-ui-app:
+        container_name: flowable-ui
+        image: flowable/flowable-ui:6.8.0
+        depends_on:
+            - flowable-ui-db
+        environment:
+            - SERVER_PORT=8080
+            - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://flowable-ui-db:5432/flowable
+            - SPRING_DATASOURCE_USERNAME=flowable
+            - SPRING_DATASOURCE_PASSWORD=flowable
+            - FLOWABLE_COMMON_APP_IDM-ADMIN_USER=admin
+            - FLOWABLE_COMMON_APP_IDM-ADMIN_PASSWORD=test
+        ports:
+            - 8081:8080
+        entrypoint: ["/wait-for-something.sh", "flowable-ui-db", "5432", "PostgreSQL", "/flowable-entrypoint.sh"]
+        networks:
+         - test-net
+        
+    flowable-ui-db:
+        image: postgres:9.6-alpine
+        container_name: flowable-ui-postgres
+        environment:
+            - POSTGRES_PASSWORD=flowable
+            - POSTGRES_USER=flowable
+            - POSTGRES_DB=flowable
+        ports:
+            - 5434:5432
+        command: postgres
+        networks:
+         - test-net
+        
+networks:
+  test-net:
+    name: test-net
+    driver: bridge

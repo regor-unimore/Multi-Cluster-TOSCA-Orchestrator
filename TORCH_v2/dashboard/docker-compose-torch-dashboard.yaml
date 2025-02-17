@@ -1,0 +1,17 @@
+version: '3.6'
+services:
+    torch-dashboard:
+        container_name: torch-dashboard
+        image: edrudi97/torch-dashboard:v0.1.1
+        environment:
+         - BPMN_ENGINE="http://flowable-rest:8080"
+         - SERVICE_BROKER_URI="http://torchservices:9000"
+         - APP_URL="http://torch-dashboard" #must be resolvable by any client of the dashboard
+        ports:
+         - "8005:8000"
+        networks:
+         - test-net    
+networks:
+  test-net:
+    name: test-net
+    driver: bridge

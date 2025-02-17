@@ -1,0 +1,13 @@
+version: '3.6'
+services:
+    torch-services:
+        container_name: torchservices
+        image: edrudi97/torchservices:v0.1.4
+        extra_hosts:
+         - "k8scluster-endpoint:192.168.17.99"
+        networks:
+         - torch-net    
+networks:
+  torch-net:
+    name: torch-net
+    driver: bridge

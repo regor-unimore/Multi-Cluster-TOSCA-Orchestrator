@@ -1,0 +1,40 @@
+version: '3.6'
+services:
+    flowable-rest-app:
+        container_name: flowable-rest
+        image: edrudi97/custom-flowable-rest:v0.1.0
+        depends_on:
+            - flowable-rest-db
+        environment:
+            - SERVER_PORT=8080
+            - SPRING_DATASOURCE_DRIVER-CLASS-NAME=org.postgresql.Driver
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://flowable-rest-db:5432/flowable
+            - SPRING_DATASOURCE_USERNAME=flowable
+            - SPRING_DATASOURCE_PASSWORD=flowable
+            - FLOWABLE_COMMON_APP_IDM-ADMIN_USER=admin
+            - FLOWABLE_COMMON_APP_IDM-ADMIN_PASSWORD=test
+        ports:
+            - 8080:8080
+        entrypoint: ["./entrypoint.sh", "/wait-for-something.sh", "flowable-rest-db", "5432", "PostgreSQL", "/flowable-entrypoint.sh"]
+        networks:
+         - torch-net
+        volumes:
+         - ./custom-jars:/custom-jars
+        
+    flowable-rest-db:
+        image: postgres:9.6-alpine
+        container_name: flowable-rest-postgres
+        environment:
+            - POSTGRES_PASSWORD=flowable
+            - POSTGRES_USER=flowable
+            - POSTGRES_DB=flowable
+        ports:
+            - 5433:5432
+        command: postgres
+        networks:
+         - torch-net
+        
+networks:
+  torch-net:
+    name: torch-net
+    driver: bridge

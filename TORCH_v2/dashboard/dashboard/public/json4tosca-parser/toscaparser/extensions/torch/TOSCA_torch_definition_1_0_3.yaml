@@ -1,0 +1,449 @@
+##########################################################################
+# The content of this file reflects the custom Node Type,
+# Relationship Type, Capability Type and Interfaces used by TORCH.
+##########################################################################
+tosca_definitions_version: tosca_simple_profile_for_torch_1_0_3
+
+##########################################################################
+# Node Type.
+# A Node Type is a reusable entity that defines the type of one or more
+# Node Templates.
+##########################################################################
+node_types:
+  torch.nodes.Location:
+    description: "a generic Location, with any granularity (Region, Area, Cluster, Namespace, Node, Pod,...)"
+    derived_from: tosca.nodes.Root
+    properties:
+      platform:
+        type: string
+        required: true
+      provider:
+        type: string
+        required: true
+    capabilities:
+      host:
+        type: torch.capabilities.Location.Container   
+          
+  torch.nodes.Location.Cluster:
+    description: "a generic Cluster"
+    derived_from: torch.nodes.Location
+    properties:
+      platform:
+        type: string
+        required: true
+        default: kubernetes
+        constraints:
+          - valid_values: [ kubernetes, swarm ]
+        description: "Platform to use"      
+      provider:
+        type: string
+        required: true
+        default: kubeadm
+        constraints:
+          - valid_values: [ azure, openstack, kubeadm, k3s ]
+        description: "Provider of the Cluster, if it exists. Use manual if the cluster already exists"
+      provider_properties:
+        type: string
+        required: false
+        description: "Additional properties required by the selected provider"
+      api-endpoint:
+        type: string
+        required: true
+        description: "Api-server of the provider or api-server of the cluster Platform if provider is manual"
+      api-version:
+        type: string
+        required: false
+        description: "Api version of the api-endpoint"
+        default: "1.28"
+      ca:
+        description: "CA Certificate, used by TORCH to authenticate the Cluster"
+        type: torch.datatypes.X509Certificate
+        required: false
+      private_key:
+        description: "Private Key file path"
+        type: string
+        required: false
+      user_crt:
+        description: "Signed User certificate file path"
+        type: string
+        required: false
+    capabilities:
+      host:
+        type: torch.capabilities.Cluster.Container 
+
+  torch.nodes.Location.Federation:
+     description: "a generic Federation of Cluster(s)"
+     derived_from: torch.nodes.Location
+     properties:
+        clusters:
+           description: "List of the clusters available in this Federation. The keys must be valid names of node templates representing Location.Cluster nodes inside the same TOSCA template where the Location.Federation is defined (@TO_CHANGE)"
+           type: map
+           required: true
+           entry_schema:
+              description: "infos of the cluster"
+              type: torch.datatypes.Federation.ClusterInfo
+           constraints:
+              - min_length: 1
+        provider:
+           type: string
+           required: true
+           default: default
+           constraints:
+              - valid_values: [ default ]
+        platform:
+           type: string
+           required: true
+           default: liqo
+           constraints:
+             - valid_values: [ kubernetes, liqo ]
+           description: "Platform to use"
+     capabilities:
+      host:
+        type: torch.capabilities.Federation.Container 
+
+  torch.nodes.ApplicationService:
+     description: "Root class for any type of application service supported by TORCH"
+     derived_from: tosca.nodes.Root
+     properties:
+       required_num_cpus:
+         description: "Number of (actual or virtual) CPUs required to run this service"
+         type: integer
+         required: false
+         constraints:
+          - greater_than: 0
+       required_mem:      
+         description: "Memory space required to run this application"
+         type: scalar-unit.size
+         required: false
+         constraints:
+          - greater_or_equal: 0 MB 
+     requirements:
+      - location:
+          capability: torch.capabilities.Location.Container 
+          node: torch.nodes.Location    
+          relationship: tosca.relationships.HostedOn 
+          occurrences: [1 , 1]  
+  
+  torch.nodes.LocationService:
+    description: "Root class for any type representing a service available in a certain Location"
+    derived_from: tosca.nodes.Root
+    requirements:
+     - location:
+          capability: torch.capabilities.Location.Container 
+          node: torch.nodes.Location    
+          relationship: tosca.relationships.HostedOn 
+          occurrences: [1 , 1]
+  
+  torch.nodes.LocationService.VolumeProvider:
+    description: "a Location Service that provision volumes by need"
+    derived_from: torch.nodes.LocationService
+    properties:
+      platform:
+        type: string
+        required: true
+        default: default
+        constraints:
+          - valid_values: [ default, longhorn, ceph, openEBS ]
+        description: "Storage solution to use. If 'default' the Storage System is the one provided by default by the platform of the Location"          
+      provider:
+        type: string
+        required: true
+        default: manual
+        constraints:
+          - valid_values: [ manual, default ]
+        description: "Provider to use to create the Storage System. if 'manual' it means the Storage system is already deployed in the Location and can be used without further action by Torch"
+    capabilities:
+      service:
+        type: tosca.capabilities.Storage
+  
+  torch.nodes.LocationResource:
+    description: "Root class for any type representing a resource available in a Location that can be allocated"
+    derived_from: tosca.nodes.Root
+    requirements:
+     - location:
+          capability: torch.capabilities.Location.Container 
+          node: torch.nodes.Location    
+          relationship: tosca.relationships.HostedOn 
+          occurrences: [1 , 1]            
+  
+  torch.nodes.LocationResource.Volume:
+    description: "a generic Volume"
+    derived_from: torch.nodes.LocationResource
+    properties:
+      data_retention:
+        type: string
+        required: false
+        default: transient
+        constraints:
+          - valid_values: [ transient, persistent ]
+        description: "Specify the data retention policy"
+      access_mode:
+        type: string
+        required: false
+        default: read-only
+        constraints:
+          - valid_values: [ read-only, read-write ]
+        description: "Specify the access modes available for the volume. For now we do not support volumes sharing so each Volume can be used by one entity only"     
+      size:
+         description: "Maximum size of the Volume"
+         type: scalar-unit.size
+         required: false
+         constraints:
+          - greater_or_equal: 1 MB
+      pre-populate:
+        description: "Specify if the volume should be pre-populated with content, and define any periodic updates needed. Updates can be set for all volume types; however, for read-only volumes, updates will temporarily enable read-write access for Torch, while remaining read-only for all other users."
+        type: torch.datatypes.Volume.VolumePopulator
+        required: false  
+    capabilities:
+      volume:
+        type: torch.capabilities.Volume.Attachment
+    requirements:
+     - provider:
+          capability: tosca.capabilities.Storage 
+          node: torch.nodes.LocationService.VolumeProvider   
+          relationship: torch.relationships.ProvidedBy 
+          occurrences: [1 , 1]                    
+
+##########################################################################
+# Relationship Type.
+# A Relationship Type is a reusable entity that defines the type of one
+# or more relationships between Node Types or Node Templates.
+##########################################################################
+
+relationship_types:
+  torch.relationships.Federation.HostedOn:
+    derived_from: tosca.relationships.HostedOn
+    valid_target_types: [torch.capabilities.Federation.Container]
+    properties:
+      replicas: 
+        description: "Number of replicas to host on each cluster.The keys must be valid Cluster TOSCA node that also belong to the Federation"
+        type: map
+        required: true
+        entry_schema:
+           type: integer
+           constraints:
+            - greater_or_equal: 1
+  
+  torch.relationships.Cluster.HostedOn:
+    derived_from: tosca.relationships.HostedOn
+    valid_target_types: [torch.capabilities.Cluster.Container]
+    properties:
+      replicas:
+         description: "number of replicas to host on this cluster"
+         type: integer
+         required: false
+         default: 1
+         constraints:
+            - greater_or_equal: 1
+  
+  torch.relationships.Volume.AttachesTo:
+    derived_from: tosca.relationships.AttachesTo
+    valid_target_types: [torch.capabilities.Volume.Attachment]
+    properties:
+      mount_path:
+        description: "mount path to use for attaching this volume to the source node of this relationship"
+        type: string
+        required: true
+  
+  torch.relationships.ProvidedBy:
+    derived_from: tosca.relationships.Root
+  
+  torch.relationships.Volume.ProvidedBy:
+    derived_from: torch.relationships.ProvidedBy
+    valid_target_types: [ tosca.capabilities.Storage ]
+
+##########################################################################
+# Capability Type.
+# A Capability Type is a reusable entity that describes a kind of
+# capability that a Node Type can declare to expose.
+##########################################################################
+capability_types:
+  torch.capabilities.Endpoint.Http:
+    derived_from: tosca.capabilities.Endpoint
+    properties:
+      network_name:
+        type: string
+        default: PRIVATE
+        constraints:
+          - valid_values: [ PRIVATE, PUBLIC ]
+      protocol:
+        type: string
+        required: false
+        default: http
+        constraints:
+          - equal: http
+    attributes:
+      port:
+        type: integer
+      endpoint:
+        type: string
+      ip_addr:
+         type: string
+      domain_name:
+         type: string
+      public_port:
+         type: integer
+      public_ip_addr:
+         type: string
+      public_domain_name:
+         type: string
+
+  torch.capabilities.Location.Container:
+    derived_from: tosca.capabilities.Container
+    properties:
+      num_nodes:
+        description: "Number of nodes in the Location that can host services. The power of each node is described by the properties of tosca.capabilities.Container"
+        type: integer
+        required: false
+        constraints:
+          - greater_or_equal: 1
+    attributes:
+      platform:
+        type: string
+      provider:
+        type: string
+
+  torch.capabilities.Cluster.Container:
+    derived_from: torch.capabilities.Location.Container
+    
+  torch.capabilities.Federation.Container:
+    derived_from: torch.capabilities.Location.Container
+
+  torch.capabilities.Volume.Attachment:
+    derived_from: tosca.capabilities.Attachment
+
+##########################################################################
+ # Interfaces Type.
+ # The Interfaces element describes a list of one or more interface
+ # definitions for a modelable entity (e.g., a Node or Relationship Type)
+ # as defined within the TOSCA Simple Profile specification.
+##########################################################################
+
+##########################################################################
+ # Data Type.
+ # A Datatype is a complex data type declaration which contains other
+ # complex or simple data types.
+##########################################################################
+
+data_types:
+  torch.datatypes.X509Certificate: 
+    derived_from: tosca.datatypes.Root
+    properties:
+      crt:
+        description: "path to a X.509 Certificate File previously uploaded"
+        type: string
+        required: true
+  
+  torch.datatypes.PrivateKey: 
+    derived_from: tosca.datatypes.Root
+    properties:
+      key:
+        description: "path to a private key file"
+        type: string
+        required: true
+  
+  torch.datatypes.Volume.VolumePopulator:
+    derived_from: tosca.datatypes.Root
+    properties:
+      protocol:
+        description: "Identify the content type that Torch has to fetch"
+        type: string
+        required: true
+        default: s3
+        constraints:
+          - valid_values: [ webdav, s3]        
+      content:
+        description: "Identify the content type that Torch has to fetch"
+        type: string
+        required: true
+        default: file
+        constraints:
+          - valid_values: [ folder, file]
+      source:
+        description: "Identify from where Torch can fetch the content"
+        type: string
+        required: true
+      source_repo:
+        description: "the name of a Repository defined in the template from which the source can be accessed."
+        type: string
+        required: false
+      load_path: 
+        description: "Identify where Torch must save the content relative to the root of the Volume"
+        type: string
+        required: false
+      periodic_update:
+        description: "Select how often the Populator should update che content of the volume. May not be safe to use in read/write Volume since it overwrite any changes with what it fetches"
+        type: scalar-unit.time
+        required: false
+  
+  torch.datatypes.Federation.ClusterInfo:
+    derived_from: tosca.datatypes.Root
+    properties:
+      num_nodes:
+        description: "Number of Cluster nodes available to Federation"
+        type: integer
+        required: false
+        constraints:
+          - greater_or_equal: 1
+        #@NOTE: default is equal to the num_nodes available in the Cluster if defined
+      num_cpus:
+        description: "Number of (actual or virtual) CPUs associated with each node  available to Federation"
+        type: integer
+        required: false
+        constraints:
+          - greater_or_equal: 1
+        #@NOTE: default is equal to the num_cpus available in the Cluster if defined 
+      cpu_frequency:         
+        description: "Specifies the operating frequency of CPU's core.  This property expresses the expected frequency of one (1) CPU as provided by the property 'num_cpus'"
+        type: scalar-unit.frequency
+        required: false
+        constraints:
+          - greater_or_equal: 0.1 GHz
+        #@NOTE: default is equal to the cpu_frequency declared in the Cluster if defined
+      disk_size:         
+        description: "Size of the local disk available to applications running on each node (default unit is MB)  available to the Federation"
+        type: scalar-unit.size
+        required: false
+        constraints:
+          - greater_or_equal: 0 MB
+        #@NOTE: default is equal to the disk_size available in the Cluster if defined 
+      mem_size:         
+        description: "Size of memory available to applications running on each node (default unit is MB) available to the Federation"
+        type: scalar-unit.size
+        required: false
+        constraints:
+          - greater_or_equal: 0 MB   
+        #@NOTE: default is equal to the mem_size available in the Cluster if defined             
+ 
+#  torch.datatypes.Federation.ReplicasInfo:
+#    derived_from: tosca.datatypes.Root
+#    properties:
+#      id:
+#        description: "Cluster ID -> should be the name of the node template representing this cluster in the TOSCA template"
+#        type: string
+#        required: true
+
+
+##########################################################################
+ # Artifact Type.
+ # An Artifact Type is a reusable entity that defines the type of one or more
+ # files which Node Types or Node Templates can have dependent relationships
+ # and used during operations such as during installation or deployment.
+##########################################################################
+artifact_types:
+  torch.artifacts.Implementation.SingleLineCommand.Bash:
+    derived_from: tosca.artifacts.Implementation.Bash
+    description: workaround type to let user define simple bash command without the need of a separate file
+
+##########################################################################
+ # Policy Type.
+ # TOSCA Policy Types represent logical grouping of TOSCA nodes that have
+ # an implied relationship and need to be orchestrated or managed together
+ # to achieve some result.
+##########################################################################
+
+##########################################################################
+ # Group Type
+ #
+##########################################################################
+
