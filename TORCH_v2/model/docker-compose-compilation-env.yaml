@@ -1,0 +1,7 @@
+version: '3.6'
+services:
+    maven-jdk:
+        container_name: maven-eclipse-temurin
+        image: maven:3.9.6-eclipse-temurin-8-focal
+        entrypoint: ["sleep", "infinity"]
+

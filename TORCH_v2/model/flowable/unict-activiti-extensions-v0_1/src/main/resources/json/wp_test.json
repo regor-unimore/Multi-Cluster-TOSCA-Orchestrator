@@ -1,0 +1,155 @@
+[
+   {
+      "name":"dbserver",
+      "type":"resource",
+      "category":"vm",
+      "requirements":{
+         "create":[
+
+         ],
+         "configure":[
+
+         ],
+         "start":[
+
+         ]
+      },
+      "properties":{
+         "host.disk.size":"10GB",
+         "host.cpus":1,
+         "host.mem.size":"4096MB",
+         "host.cpu.frequency":"1GHz",
+         "os.architecture":"x86_64",
+         "os.type":"Linux",
+         "os.distribution":"Ubuntu",
+         "os.version":"16.04"
+      }
+   },
+   {
+      "name":"appserver",
+      "type":"resource",
+      "category":"vm",
+      "requirements":{
+         "create":[
+
+         ],
+         "configure":[
+
+         ],
+         "start":[
+
+         ]
+      },
+      "properties":{
+         "host.disk.size":"10GB",
+         "host.cpus":1,
+         "host.mem.size":"4096MB",
+         "host.cpu.frequency":"1GHz",
+         "os.architecture":"x86_64",
+         "os.type":"Linux",
+         "os.distribution":"Ubuntu",
+         "os.version":"16.04"
+      }
+   },
+   {
+      "name":"mysqldbms",
+      "type":"package",
+      "category":"dbms",
+      "requirements":{
+         "create":[
+            "dbserver.create"
+         ],
+         "configure":[
+
+         ],
+         "start":[
+
+         ]
+      },
+      "properties":{
+         "db.root.pwd":"root",
+         "db.port":3306
+      }
+   },
+   {
+      "name":"mysqldb",
+      "type":"package",
+      "category":"db",
+      "requirements":{
+         "create":[
+            "mysqldbms.start"
+         ],
+         "configure":[
+            "appserver.create"
+         ],
+         "start":[
+
+         ]
+      },
+      "properties":{
+         "db.name":"wordpress",
+         "db.usr":"wp.usr",
+         "db.pwd":"wp.pwd"
+      }
+   },
+   {
+      "name":"php",
+      "type":"package",
+      "category":"sc",
+      "requirements":{
+         "create":[
+            "appserver.create"
+         ],
+         "configure":[
+
+         ],
+         "start":[
+
+         ]
+      },
+      "properties":{
+         "not.a.property":"not.a.property"
+      }
+   },
+   {
+      "name":"apache",
+      "type":"package",
+      "category":"ws",
+      "requirements":{
+         "create":[
+            "appserver.create"
+         ],
+         "configure":[
+
+         ],
+         "start":[
+
+         ]
+      },
+      "properties":{
+         "port":80,
+         "doc.root":"/var/www"
+      }
+   },
+   {
+      "name":"wordpress",
+      "type":"package",
+      "category":"wa",
+      "requirements":{
+         "create":[
+            "apache.start"
+         ],
+         "configure":[
+            "php.start",
+            "mysqldb.start"
+         ],
+         "start":[
+
+         ]
+      },
+      "properties":{
+         "zip.url":"https://wordpress.org/latest.zip",
+         "context.root":"/"
+      }
+   }
+]

@@ -1,0 +1,50 @@
+#####################################################
+##   FLOWABLE INSTALLATION GUIDE FOR TORCH_V2:     ##
+#####################################################
+#
+#
+# 
+# 1) Compile any custom java class (for example Delegates used in BPMN Service Task) into a jar file
+#
+#	For example, let's say we want to compile the java delegates required by the BPMN Process Definitions used in TORCH_v2.
+#	The maven project with the java delegates is contained in the folder "unict-activity-extensions", to compile the project
+#	we need to install a jdk and maven. We can either install them locally in our pc or use a docker container with both the
+#	tool already installed and then copy the resulting jar in our pc.
+#	Below it's shown the second approach:
+#		a) start a docker container with jdk and maven already installed
+#			docker compose -f docker-compose-compilation-env.yaml up -d
+#
+#		b) copy the project folder inside the container
+#			docker cp ./unict-activiti-extensions maven-eclipse-temurin:/unict-activity-extensions
+#                          //after the first time you have to copy the content rather than the folder!
+#                          docker cp ./unict-activiti-extensions-v0_1/. maven-eclipse-temurin:/unict-activity-extensions
+#
+#		b) exec into it and compile the java code
+#			docker exec -it maven-eclipse-temurin /bin/bash
+#			mvn -f unict-activity-extensions/pom.xml clean package
+#
+#		c) save locally the resulted jar file
+#			docker cp maven-eclipse-temurin:/unict-activity-extensions/target/bpmn4tosca-1.0-SNAPSHOT.jar .
+#
+#               d) in case your class depends on other jar, be sure to copy them as well
+#			
+#		c) kill the docker container
+#			docker compose -f docker-compose-compilation-env.yaml down -t2
+#			#explain difference in pom (with ot without dependencies)
+#
+#
+# 2) build a custom flowable docker image using the Dockerfile and the entrypoint.sh. This will upload the custom jars to the classpath of flowable at start up.
+#
+# 3) Copy all jars into the 'custom-jars' folder
+#
+# 4) start flowable and check the logs, if an exception arise stating that some class overlap with another it means one of your
+#    jars already exists inside the flowable container, remove it from the custom-jars folder since it's not needed and retry until
+#    you are successful
+#
+#
+## TO DEPLOY THE BPMN PLANS YOU CAN USE THE FOLLOWING COMMAND
+
+curl -u rest-admin:test -X POST http://localhost:8080/flowable-rest/service/repository/deployments -H "Content-Type: multipart/form-data" -F "archive=@bpmn_plans_v2.zip;type=application/zip"
+
+#the output should be something like this:
+{"id":"8d2269dd-f0df-11ee-ad27-0242ac120003","name":"bpmn_plans","deploymentTime":"2024-04-02T10:55:43.127Z","category":null,"parentDeploymentId":"8d2269dd-f0df-11ee-ad27-0242ac120003","url":"http://localhost:8080/flowable-rest/service/repository/deployments/8d2269dd-f0df-11ee-ad27-0242ac120003","tenantId":""}

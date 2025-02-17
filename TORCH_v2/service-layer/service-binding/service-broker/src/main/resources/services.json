@@ -1,0 +1,33 @@
+[
+   {
+      "category":"cluster",
+      "name":"manual-kubernetes",
+      "type":"resource"
+   },
+   {
+      "category":"du",
+      "name":"kubernetes",
+      "type":"du"
+   },
+   {
+      "category":"storage",
+      "name":"default-kubernetes",
+      "type":"resource"      
+   },
+   {
+      "category":"volume",
+      "name":"kubernetes",
+      "type":"resource"      
+   },
+   {
+      "category":"federation",
+      "name":"liqo",
+      "type":"resource"      
+   },
+   {
+      "category":"du",
+      "name":"liqo",
+      "type":"du"      
+   }
+   
+]

@@ -1,0 +1,12 @@
+[
+   {
+      "category":"du",
+      "name":"kubernetes",
+      "type":"du"
+   },
+   {
+      "category":"db",
+      "name":"mysql",
+      "type":"package"
+   }
+]

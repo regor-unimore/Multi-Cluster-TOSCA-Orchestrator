@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.signavio.com">
+  <signal id="escalation" name="Escalation" flowable:scope="processInstance"></signal>
+  <process id="bpmn4tosca-overallX" name="BPMN4TOSCA-OVERALLX" isExecutable="true">
+    <extensionElements>
+      <flowable:executionListener event="start" class="org.flowable.engine.impl.bpmn.listener.ScriptExecutionListener">
+        <flowable:field name="language">
+          <flowable:string><![CDATA[groovy]]></flowable:string>
+        </flowable:field>
+        <flowable:field name="script">
+          <flowable:string><![CDATA[execution.setVariable("jsonInput", '[{"name":"dbserver","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"appserver","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"mysqldbms","type":"package","category":"dbms","requirements":{"create":["dbserver.create"],"configure":[],"start":[]},"properties":{"db.root.pwd":"root","db.port":3306}},{"name":"mysqldb","type":"package","category":"db","requirements":{"create":["mysqldbms.start"],"configure":["appserver.create"],"start":[]},"properties":{"db.name":"wordpress","db.usr":"wp.usr","db.pwd":"wp.pwd"}},{"name":"php","type":"package","category":"sc","requirements":{"create":["appserver.create"],"configure":[],"start":[]},"properties":{"not.a.property":"not.a.property"}},{"name":"apache","type":"package","category":"ws","requirements":{"create":["appserver.create"],"configure":[],"start":[]},"properties":{"port":80,"doc.root":"/var/www"}},{"name":"wordpress","type":"package","category":"wa","requirements":{"create":["apache.start"],"configure":["php.start", "mysqldb.start"],"start":[]},"properties":{"zip.url":"https://wordpress.org/latest.zip","context.root":"/"}}]');
+
+//execution.setVariable("jsonInput",'[{"name":"dbserver1","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"appserver1","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"dbserver2","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"appserver2","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"mysqldbms1","type":"package","category":"dbms","requirements":{"create":["dbserver1.create"],"configure":[],"start":[]},"properties":{"db.root.pwd":"root","db.port":3306}},{"name":"mysqldbms2","type":"package","category":"dbms","requirements":{"create":["dbserver2.create"],"configure":[],"start":[]},"properties":{"db.root.pwd":"root","db.port":3306}},{"name":"mysqldb1","type":"package","category":"db","requirements":{"create":["mysqldbms1.start"],"configure":["appserver1.create"],"start":[]},"properties":{"db.name":"wordpress","db.usr":"wp.usr","db.pwd":"wp.pwd"}},{"name":"mysqldb2","type":"package","category":"db","requirements":{"create":["mysqldbms2.start"],"configure":["appserver2.create"],"start":[]},"properties":{"db.name":"wordpress","db.usr":"wp.usr","db.pwd":"wp.pwd"}},{"name":"php1","type":"package","category":"sc","requirements":{"create":["appserver1.create"],"configure":[],"start":[]},"properties":{"not.a.property":"not.a.property"}},{"name":"php2","type":"package","category":"sc","requirements":{"create":["appserver2.create"],"configure":[],"start":[]},"properties":{"not.a.property":"not.a.property"}},{"name":"apache1","type":"package","category":"ws","requirements":{"create":["appserver1.create"],"configure":[],"start":[]},"properties":{"port":80,"doc.root":"/var/www"}},{"name":"apache2","type":"package","category":"ws","requirements":{"create":["appserver2.create"],"configure":[],"start":[]},"properties":{"port":80,"doc.root":"/var/www"}},{"name":"wordpress1","type":"package","category":"wa","requirements":{"create":["apache1.start"],"configure":["php1.start", "mysqldb1.start"],"start":[]},"properties":{"zip.url":"https://wordpress.org/latest.zip","context.root":"/"}},{"name":"wordpress2","type":"package","category":"wa","requirements":{"create":["apache2.start"],"configure":["php2.start", "mysqldb2.start"],"start":[]},"properties":{"zip.url":"https://wordpress.org/latest.zip","context.root":"/"}}]');
+
+//execution.setVariable("jsonInput",'[{"name":"dbserver1","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"appserver1","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"dbserver2","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"appserver2","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"dbserver3","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"appserver3","type":"resource","category":"vm","requirements":{"create":[],"configure":[],"start":[]},"properties":{"host.disk.size":"10GB","host.cpus":1,"host.mem.size":"4096MB","host.cpu.frequency":"1GHz","os.architecture":"x86_64","os.type":"Linux","os.distribution":"Ubuntu","os.version":"16.04"}},{"name":"mysqldbms1","type":"package","category":"dbms","requirements":{"create":["dbserver1.create"],"configure":[],"start":[]},"properties":{"db.root.pwd":"root","db.port":3306}},{"name":"mysqldbms2","type":"package","category":"dbms","requirements":{"create":["dbserver2.create"],"configure":[],"start":[]},"properties":{"db.root.pwd":"root","db.port":3306}},{"name":"mysqldbms3","type":"package","category":"dbms","requirements":{"create":["dbserver3.create"],"configure":[],"start":[]},"properties":{"db.root.pwd":"root","db.port":3306}},{"name":"mysqldb1","type":"package","category":"db","requirements":{"create":["mysqldbms1.start"],"configure":["appserver1.create"],"start":[]},"properties":{"db.name":"wordpress","db.usr":"wp.usr","db.pwd":"wp.pwd"}},{"name":"mysqldb2","type":"package","category":"db","requirements":{"create":["mysqldbms2.start"],"configure":["appserver2.create"],"start":[]},"properties":{"db.name":"wordpress","db.usr":"wp.usr","db.pwd":"wp.pwd"}},{"name":"mysqldb3","type":"package","category":"db","requirements":{"create":["mysqldbms3.start"],"configure":["appserver3.create"],"start":[]},"properties":{"db.name":"wordpress","db.usr":"wp.usr","db.pwd":"wp.pwd"}},{"name":"php1","type":"package","category":"sc","requirements":{"create":["appserver1.create"],"configure":[],"start":[]},"properties":{"not.a.property":"not.a.property"}},{"name":"php2","type":"package","category":"sc","requirements":{"create":["appserver2.create"],"configure":[],"start":[]},"properties":{"not.a.property":"not.a.property"}},{"name":"php3","type":"package","category":"sc","requirements":{"create":["appserver3.create"],"configure":[],"start":[]},"properties":{"not.a.property":"not.a.property"}},{"name":"apache1","type":"package","category":"ws","requirements":{"create":["appserver1.create"],"configure":[],"start":[]},"properties":{"port":80,"doc.root":"/var/www"}},{"name":"apache2","type":"package","category":"ws","requirements":{"create":["appserver2.create"],"configure":[],"start":[]},"properties":{"port":80,"doc.root":"/var/www"}},{"name":"apache3","type":"package","category":"ws","requirements":{"create":["appserver3.create"],"configure":[],"start":[]},"properties":{"port":80,"doc.root":"/var/www"}},{"name":"wordpress1","type":"package","category":"wa","requirements":{"create":["apache1.start"],"configure":["php1.start", "mysqldb1.start"],"start":[]},"properties":{"zip.url":"https://wordpress.org/latest.zip","context.root":"/"}},{"name":"wordpress2","type":"package","category":"wa","requirements":{"create":["apache2.start"],"configure":["php2.start", "mysqldb2.start"],"start":[]},"properties":{"zip.url":"https://wordpress.org/latest.zip","context.root":"/"}},{"name":"wordpress3","type":"package","category":"wa","requirements":{"create":["apache3.start"],"configure":["php3.start", "mysqldb3.start"],"start":[]},"properties":{"zip.url":"https://wordpress.org/latest.zip","context.root":"/"}}]');
+
+//execution.setVariable("serviceBrokerURI","http://151.97.12.231:9000");
+execution.setVariable("serviceBrokerURI","http://10.31.127.31:9000");
+execution.setVariable("retryCounter",1);
+execution.setVariable("checkPeriod","PT1S");
+execution.setVariable("createTimeout","PT30S");
+
+def businessKey = UUID.randomUUID().toString();
+execution.setVariable('businessKey', businessKey);
+
+runtimeService.updateBusinessKey(execution.getId(), businessKey);
+
+println "BPMN4ToscaOverall Business Key:  " + execution.getProcessInstanceBusinessKey();]]></flowable:string>
+        </flowable:field>
+      </flowable:executionListener>
+    </extensionElements>
+    <startEvent id="sid-2D83E14F-7BD1-4546-BC93-7838AAE30FEF" name="begin"></startEvent>
+    <subProcess id="sid-A7813BE5-A744-4D45-B04F-376B527A943B" name="Instantiate Node">
+      <multiInstanceLoopCharacteristics isSequential="false" flowable:collection="nodes" flowable:elementVariable="node"></multiInstanceLoopCharacteristics>
+      <startEvent id="sid-ACC41E62-76DA-4E97-8B60-9FF419117239"></startEvent>
+      <endEvent id="sid-600494D2-F452-45C0-AEDD-7581BFDCAC0E"></endEvent>
+      <callActivity id="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442773" name="deploy
+&lt;package&gt;" calledElement="deploypackagexx" flowable:calledElementType="key" flowable:inheritBusinessKey="true" flowable:completeAsync="true">
+        <extensionElements>
+          <flowable:in source="node" target="node"></flowable:in>
+          <flowable:in source="serviceBrokerURI" target="serviceBrokerURI"></flowable:in>
+        </extensionElements>
+      </callActivity>
+      <callActivity id="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442774" name="create
+&lt;cloud resource&gt;" calledElement="createservicex" flowable:calledElementType="key" flowable:inheritBusinessKey="true" flowable:completeAsync="true">
+        <extensionElements>
+          <flowable:in source="node" target="node"></flowable:in>
+          <flowable:in source="retryCounter" target="retryCounter"></flowable:in>
+          <flowable:in source="checkPeriod" target="checkPeriod"></flowable:in>
+          <flowable:in source="createTimeout" target="createTimeout"></flowable:in>
+          <flowable:in source="serviceBrokerURI" target="serviceBrokerURI"></flowable:in>
+        </extensionElements>
+      </callActivity>
+      <exclusiveGateway id="sid-D47AE74D-DF22-45FC-9F8B-2490806AF7C8"></exclusiveGateway>
+      <exclusiveGateway id="sid-DCC2E0CB-85B7-415E-9348-FF3F7DBAD171"></exclusiveGateway>
+      <intermediateThrowEvent id="sid-54DED2D5-EDF7-41C7-835D-45637B60F2F0" name="cloud resource
+error">
+        <signalEventDefinition signalRef="escalation"></signalEventDefinition>
+      </intermediateThrowEvent>
+      <intermediateThrowEvent id="sid-5B79A65C-A5BE-426B-8577-D22F133D2BBA" name="package
+error">
+        <signalEventDefinition signalRef="escalation"></signalEventDefinition>
+      </intermediateThrowEvent>
+      <boundaryEvent id="sid-9836F998-1615-423C-B758-DFA71F4820E8" name="any error" attachedToRef="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442774">
+        <errorEventDefinition></errorEventDefinition>
+      </boundaryEvent>
+      <boundaryEvent id="sid-479AB990-1A44-4749-839A-AE80C17A72E3" name="any error" attachedToRef="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442773">
+        <errorEventDefinition></errorEventDefinition>
+      </boundaryEvent>
+      <sequenceFlow id="sid-03C53F81-7F69-45E8-B9F9-4021D23999CC" sourceRef="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442774" targetRef="sid-DCC2E0CB-85B7-415E-9348-FF3F7DBAD171"></sequenceFlow>
+      <sequenceFlow id="sid-9612124B-DBE4-4CB3-BD85-19D9659A7FA0" sourceRef="sid-ACC41E62-76DA-4E97-8B60-9FF419117239" targetRef="sid-D47AE74D-DF22-45FC-9F8B-2490806AF7C8"></sequenceFlow>
+      <sequenceFlow id="sid-B71F72DC-74AB-4AAA-AC5A-F5E905F3306D" name="cloud resource" sourceRef="sid-D47AE74D-DF22-45FC-9F8B-2490806AF7C8" targetRef="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442774">
+        <conditionExpression xsi:type="tFormalExpression"><![CDATA[${node.type == 'resource'}]]></conditionExpression>
+      </sequenceFlow>
+      <sequenceFlow id="sid-354442CD-613F-437F-ACE4-6A1378E9EFC3" sourceRef="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442773" targetRef="sid-DCC2E0CB-85B7-415E-9348-FF3F7DBAD171"></sequenceFlow>
+      <sequenceFlow id="sid-38382C0B-46F8-4BD9-8A5D-4F83BF3667B5" sourceRef="sid-DCC2E0CB-85B7-415E-9348-FF3F7DBAD171" targetRef="sid-600494D2-F452-45C0-AEDD-7581BFDCAC0E"></sequenceFlow>
+      <sequenceFlow id="sid-8E3782FF-23A4-49B8-88B4-09BAA1CA245D" sourceRef="sid-479AB990-1A44-4749-839A-AE80C17A72E3" targetRef="sid-5B79A65C-A5BE-426B-8577-D22F133D2BBA"></sequenceFlow>
+      <sequenceFlow id="sid-158D397E-65C2-430C-97B8-44CF8DC3381E" sourceRef="sid-9836F998-1615-423C-B758-DFA71F4820E8" targetRef="sid-54DED2D5-EDF7-41C7-835D-45637B60F2F0">
+        <extensionElements>
+          <flowable:executionListener event="start" class="org.flowable.engine.impl.bpmn.listener.ScriptExecutionListener">
+            <flowable:field name="language">
+              <flowable:string><![CDATA[groovy]]></flowable:string>
+            </flowable:field>
+            <flowable:field name="script">
+              <flowable:string><![CDATA[println "Cloud resource escalation triggered";]]></flowable:string>
+            </flowable:field>
+          </flowable:executionListener>
+        </extensionElements>
+      </sequenceFlow>
+      <sequenceFlow id="sid-741B9A73-C91B-4227-8DAA-E63056DB7492" name="package" sourceRef="sid-D47AE74D-DF22-45FC-9F8B-2490806AF7C8" targetRef="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442773">
+        <conditionExpression xsi:type="tFormalExpression"><![CDATA[${node.type == 'package'}]]></conditionExpression>
+      </sequenceFlow>
+    </subProcess>
+    <endEvent id="sid-B2BA4B9A-11DE-443D-9BBC-7962523F3302" name="complete"></endEvent>
+    <sequenceFlow id="sid-8E1F0139-C103-4CF7-80AC-EE44A74926ED" sourceRef="sid-0447876F-F5A8-42CC-90D7-5C559B7DA234" targetRef="sid-182603B1-1ACA-40C3-809C-A4A7E115568F"></sequenceFlow>
+    <endEvent id="sid-5871BCD1-9FF0-4870-80A3-24C8A04069A1" name="end escalation"></endEvent>
+    <scriptTask id="sid-182603B1-1ACA-40C3-809C-A4A7E115568F" name="perform escalation" scriptFormat="groovy" flowable:autoStoreVariables="false">
+      <script><![CDATA[println "Escalation for Execution ID: " + execution.getId();]]></script>
+    </scriptTask>
+    <scriptTask id="sid-ED4C308F-F9D4-41CA-9076-906C824DBBD8" name="init" scriptFormat="groovy" flowable:autoStoreVariables="false">
+      <script><![CDATA[import com.fasterxml.jackson.databind.ObjectMapper;
+import it.unict.bpmn4tosca.model.Node;
+
+ObjectMapper mapper = new ObjectMapper();
+List<Node> nodes = mapper.readValue(jsonInput, mapper.getTypeFactory().constructCollectionType(List.class, Node.class));
+execution.setVariable("nodes", nodes);]]></script>
+    </scriptTask>
+    <sequenceFlow id="sid-616D4B7A-3D85-4D81-8F72-3194300F4C02" sourceRef="sid-A7813BE5-A744-4D45-B04F-376B527A943B" targetRef="sid-B2BA4B9A-11DE-443D-9BBC-7962523F3302"></sequenceFlow>
+    <boundaryEvent id="sid-0447876F-F5A8-42CC-90D7-5C559B7DA234" name="error escalation" attachedToRef="sid-A7813BE5-A744-4D45-B04F-376B527A943B" cancelActivity="false">
+      <signalEventDefinition signalRef="escalation"></signalEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="sid-1EA35E91-49FF-47DD-886A-A316EF81C505" sourceRef="sid-182603B1-1ACA-40C3-809C-A4A7E115568F" targetRef="sid-5871BCD1-9FF0-4870-80A3-24C8A04069A1"></sequenceFlow>
+    <sequenceFlow id="sid-8D65B5DD-59D2-4AF7-9A39-CD10B3DAA75C" sourceRef="sid-2D83E14F-7BD1-4546-BC93-7838AAE30FEF" targetRef="sid-ED4C308F-F9D4-41CA-9076-906C824DBBD8"></sequenceFlow>
+    <sequenceFlow id="sid-BBB6B4F9-AD68-459B-BAE7-AF218A61AB63" sourceRef="sid-ED4C308F-F9D4-41CA-9076-906C824DBBD8" targetRef="sid-A7813BE5-A744-4D45-B04F-376B527A943B"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_bpmn4tosca-overallX">
+    <bpmndi:BPMNPlane bpmnElement="bpmn4tosca-overallX" id="BPMNPlane_bpmn4tosca-overallX">
+      <bpmndi:BPMNShape bpmnElement="sid-2D83E14F-7BD1-4546-BC93-7838AAE30FEF" id="BPMNShape_sid-2D83E14F-7BD1-4546-BC93-7838AAE30FEF">
+        <omgdc:Bounds height="30.0" width="30.0" x="38.235830192124666" y="232.17802886163304"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-A7813BE5-A744-4D45-B04F-376B527A943B" id="BPMNShape_sid-A7813BE5-A744-4D45-B04F-376B527A943B">
+        <omgdc:Bounds height="407.6363157133758" width="712.3692120482688" x="405.0" y="43.359871004945205"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-ACC41E62-76DA-4E97-8B60-9FF419117239" id="BPMNShape_sid-ACC41E62-76DA-4E97-8B60-9FF419117239">
+        <omgdc:Bounds height="30.0" width="30.0" x="442.76416980787553" y="231.26999335134542"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-600494D2-F452-45C0-AEDD-7581BFDCAC0E" id="BPMNShape_sid-600494D2-F452-45C0-AEDD-7581BFDCAC0E">
+        <omgdc:Bounds height="28.0" width="28.0" x="1050.0" y="232.26999335134542"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442773" id="BPMNShape_sid-EF8C9D66-6808-4E2A-9ADD-341AAA442773">
+        <omgdc:Bounds height="80.00000000000006" width="161.3098474958672" x="637.7641698078755" y="294.84431754355586"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-EF8C9D66-6808-4E2A-9ADD-341AAA442774" id="BPMNShape_sid-EF8C9D66-6808-4E2A-9ADD-341AAA442774">
+        <omgdc:Bounds height="80.00000000000006" width="161.3098474958672" x="637.7641698078755" y="115.63171449571658"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-D47AE74D-DF22-45FC-9F8B-2490806AF7C8" id="BPMNShape_sid-D47AE74D-DF22-45FC-9F8B-2490806AF7C8">
+        <omgdc:Bounds height="40.0" width="40.0" x="547.7641698078755" y="226.26999335134542"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-DCC2E0CB-85B7-415E-9348-FF3F7DBAD171" id="BPMNShape_sid-DCC2E0CB-85B7-415E-9348-FF3F7DBAD171">
+        <omgdc:Bounds height="40.0" width="40.0" x="952.7641698078755" y="226.26999335134542"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-54DED2D5-EDF7-41C7-835D-45637B60F2F0" id="BPMNShape_sid-54DED2D5-EDF7-41C7-835D-45637B60F2F0">
+        <omgdc:Bounds height="30.0" width="30.0" x="877.7641698078755" y="164.66021290962337"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-5B79A65C-A5BE-426B-8577-D22F133D2BBA" id="BPMNShape_sid-5B79A65C-A5BE-426B-8577-D22F133D2BBA">
+        <omgdc:Bounds height="30.0" width="30.0" x="877.7641698078755" y="342.252016032273"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-9836F998-1615-423C-B758-DFA71F4820E8" id="BPMNShape_sid-9836F998-1615-423C-B758-DFA71F4820E8">
+        <omgdc:Bounds height="30.0" width="30.0" x="784.6097458419714" y="164.66021290962337"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-479AB990-1A44-4749-839A-AE80C17A72E3" id="BPMNShape_sid-479AB990-1A44-4749-839A-AE80C17A72E3">
+        <omgdc:Bounds height="30.0" width="30.0" x="784.1095425720486" y="342.252016032273"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-B2BA4B9A-11DE-443D-9BBC-7962523F3302" id="BPMNShape_sid-B2BA4B9A-11DE-443D-9BBC-7962523F3302">
+        <omgdc:Bounds height="28.0" width="28.0" x="1185.0" y="232.26999335134542"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-5871BCD1-9FF0-4870-80A3-24C8A04069A1" id="BPMNShape_sid-5871BCD1-9FF0-4870-80A3-24C8A04069A1">
+        <omgdc:Bounds height="28.0" width="28.0" x="1312.7641698078755" y="73.81699964331375"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-182603B1-1ACA-40C3-809C-A4A7E115568F" id="BPMNShape_sid-182603B1-1ACA-40C3-809C-A4A7E115568F">
+        <omgdc:Bounds height="80.0" width="100.0" x="1167.7641698078755" y="47.81699964331375"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-ED4C308F-F9D4-41CA-9076-906C824DBBD8" id="BPMNShape_sid-ED4C308F-F9D4-41CA-9076-906C824DBBD8">
+        <omgdc:Bounds height="80.0" width="100.0" x="195.0" y="207.3598710049452"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-0447876F-F5A8-42CC-90D7-5C559B7DA234" id="BPMNShape_sid-0447876F-F5A8-42CC-90D7-5C559B7DA234">
+        <omgdc:Bounds height="30.0" width="30.0" x="1102.8786651259284" y="73.23272129386014"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="sid-354442CD-613F-437F-ACE4-6A1378E9EFC3" id="BPMNEdge_sid-354442CD-613F-437F-ACE4-6A1378E9EFC3">
+        <omgdi:waypoint x="799.0240173037427" y="334.63424112423263"></omgdi:waypoint>
+        <omgdi:waypoint x="972.7641698078755" y="334.18184214331217"></omgdi:waypoint>
+        <omgdi:waypoint x="972.7641698078755" y="266.1812959262673"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-8E3782FF-23A4-49B8-88B4-09BAA1CA245D" id="BPMNEdge_sid-8E3782FF-23A4-49B8-88B4-09BAA1CA245D">
+        <omgdi:waypoint x="814.0595404892572" y="357.252016032273"></omgdi:waypoint>
+        <omgdi:waypoint x="877.7641698078755" y="357.252016032273"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-741B9A73-C91B-4227-8DAA-E63056DB7492" id="BPMNEdge_sid-741B9A73-C91B-4227-8DAA-E63056DB7492">
+        <omgdi:waypoint x="567.7641698078755" y="266.208659650103"></omgdi:waypoint>
+        <omgdi:waypoint x="567.7641698078755" y="334.18184214331217"></omgdi:waypoint>
+        <omgdi:waypoint x="637.7641698078677" y="334.48965337751156"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-9612124B-DBE4-4CB3-BD85-19D9659A7FA0" id="BPMNEdge_sid-9612124B-DBE4-4CB3-BD85-19D9659A7FA0">
+        <omgdi:waypoint x="472.7141682978331" y="246.26999335134542"></omgdi:waypoint>
+        <omgdi:waypoint x="547.7641698078755" y="246.26999335134542"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-616D4B7A-3D85-4D81-8F72-3194300F4C02" id="BPMNEdge_sid-616D4B7A-3D85-4D81-8F72-3194300F4C02">
+        <omgdi:waypoint x="1117.3192120482652" y="246.43929679570311"></omgdi:waypoint>
+        <omgdi:waypoint x="1185.0000252456703" y="246.29892592999818"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-8D65B5DD-59D2-4AF7-9A39-CD10B3DAA75C" id="BPMNEdge_sid-8D65B5DD-59D2-4AF7-9A39-CD10B3DAA75C">
+        <omgdi:waypoint x="68.18581950507985" y="247.1922053333932"></omgdi:waypoint>
+        <omgdi:waypoint x="195.0" y="247.3124580436255"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-03C53F81-7F69-45E8-B9F9-4021D23999CC" id="BPMNEdge_sid-03C53F81-7F69-45E8-B9F9-4021D23999CC">
+        <omgdi:waypoint x="799.0240173037427" y="155.48905625827732"></omgdi:waypoint>
+        <omgdi:waypoint x="972.7641698078755" y="155.18184214331217"></omgdi:waypoint>
+        <omgdi:waypoint x="972.7641698078755" y="226.26999335134542"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-158D397E-65C2-430C-97B8-44CF8DC3381E" id="BPMNEdge_sid-158D397E-65C2-430C-97B8-44CF8DC3381E">
+        <omgdi:waypoint x="814.5597437367646" y="179.66021290962337"></omgdi:waypoint>
+        <omgdi:waypoint x="877.7641698078755" y="179.66021290962337"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-BBB6B4F9-AD68-459B-BAE7-AF218A61AB63" id="BPMNEdge_sid-BBB6B4F9-AD68-459B-BAE7-AF218A61AB63">
+        <omgdi:waypoint x="294.9499999998841" y="247.34225694389133"></omgdi:waypoint>
+        <omgdi:waypoint x="404.9999999998458" y="247.30348839551155"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-1EA35E91-49FF-47DD-886A-A316EF81C505" id="BPMNEdge_sid-1EA35E91-49FF-47DD-886A-A316EF81C505">
+        <omgdi:waypoint x="1267.7141698078237" y="87.81699964331375"></omgdi:waypoint>
+        <omgdi:waypoint x="1312.7641698078755" y="87.81699964331375"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-8E1F0139-C103-4CF7-80AC-EE44A74926ED" id="BPMNEdge_sid-8E1F0139-C103-4CF7-80AC-EE44A74926ED">
+        <omgdi:waypoint x="1132.8286625336418" y="88.23272129386014"></omgdi:waypoint>
+        <omgdi:waypoint x="1167.7641698078628" y="88.23272129386014"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-B71F72DC-74AB-4AAA-AC5A-F5E905F3306D" id="BPMNEdge_sid-B71F72DC-74AB-4AAA-AC5A-F5E905F3306D">
+        <omgdi:waypoint x="567.7641698078755" y="226.26999335134542"></omgdi:waypoint>
+        <omgdi:waypoint x="567.7641698078755" y="155.18184214331217"></omgdi:waypoint>
+        <omgdi:waypoint x="637.7641698078671" y="155.39086992604163"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-38382C0B-46F8-4BD9-8A5D-4F83BF3667B5" id="BPMNEdge_sid-38382C0B-46F8-4BD9-8A5D-4F83BF3667B5">
+        <omgdi:waypoint x="992.7032485735921" y="246.26999335134542"></omgdi:waypoint>
+        <omgdi:waypoint x="1050.0" y="246.26999335134542"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

@@ -1,0 +1,8 @@
+{
+  "host": "localhost",
+  "http.port": 9019,
+  "apiserver.uri": "https://bologna-control-plane:6443",
+  "ca.cert.file": "/src/main/resources/ca.crt",
+  "cert.file" : "/src/main/resources/torch-signed.crt",
+  "user.key.file" :  "/src/main/resources/torch.key"
+}
