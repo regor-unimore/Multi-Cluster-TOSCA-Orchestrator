@@ -9,6 +9,8 @@ This guide will show you how you can use TORCH-V2 to deploy an application consi
 
 NOTE: The commands reported in this guide presume you are using bash to run them. For other type of shell the syntax may differ.  
 
+NOTE2: Due to current limitations, you need to create the Liqo Federation manually and have the cluster already in a peering session. The first "cluster" mentioned in the Federation node must be the entrypoint of the federation (the Client). 
+
 ## Create a RBAC Role for TORCH-V2
 
 The current version of TORCH-V2 requires some authorization to operate on each cluster. When using Liqo, TORCH_V2 need to have the authorization required to install Liqo on the each cluster (if not already installed) and to create new namespaces to offload other than the usual capability of managing "deployments", "pods" and "services". For semplicity, we will create a user for TORCH_V2 with the same authorization as the cluster admin but of course it is possible to create a more fine tuned user as long as all the authorization required are given.   
@@ -18,7 +20,7 @@ You can check if RBAC is enabled on a general Kubernetes cluster by listing the 
 I.e;  
 `kubectl api-versions | grep "rbac.authorization.k8s.io/v1"`  
 
-Then we need to crete a Role with the authorization for TORCH-V2. The file role-torch.yaml in the folder *examples/two-clusters/resources* already contains the correct authorization, we can apply them to the cluster:  
+Then we need to crete a Role with the authorization for TORCH-V2. The file role-torch.yaml in the folder *examples/RVRPTW-and-compactor/resources* already contains the correct authorization, we can apply them to the cluster:  
 `kubectl apply -f role-torch-admin.yaml`  
 
 We now associate the Role with the authorization to a username that from now on will represents TORCH-V2 as a user. The file role-binding-torch.yaml show an example of valid RoleBinding that gives to the user 'torch' the uthorization required by TORCH-V2 to correctly operate. As always we can apply the file using kubectl:  
@@ -107,11 +109,11 @@ In the upper-left part of the monitoring page you can see the graph representing
 
 ## Use the deployed pipeline application
 1. Go to the monitoring page (see previous section) and wait for all the components to be in the "STARTED" state.
-2. Check in the lower part of the page which port and domain name is the component my-solver using. These info can be retrieved by looking at the "app-endpoint" attributes of the my-solver component, under the name respectively of "public_port" and "public_domain_name"
-3. (optionale) apply on the federation namespace ("<your-template-name>-federation") the tester.yaml file to receive the result of the optimization pipeline. You can also interrogate each microservice to retrieve partial results and from the last microservice (compactor) you can retrieve the optimized route without having to deploy the tester.
+2. Check in the lower part of the page which port and domain name is the component pipeline_orchestrator using. These info can be retrieved by looking at the "app-endpoint" attributes of the pipeline_orchestrator component, under the name respectively of "public_port" and "public_domain_name"
+3. (optional) apply on the federation namespace ("<your-template-name>-federation") the tester.yaml file to receive the result of the optimization pipeline. You can also interrogate each microservice to retrieve partial results and from the last microservice (compactor) you can retrieve the optimized route without having to deploy the tester.
 4. Use these info to make an http post to the pipeline orchestrator to optimize route using the RVRPTW Solver and Route Compactor. For example, you can use the following command: `curl -X POST http://k8scluster-endpoint:31307/api/v1/use-chain -H "Content-Type: application/json"  -d "@input-test.json"`. Remember to change the port and hostname with the app-endpoint.public_port and app-endpoint.public_domain_name info.
 
-N.B., before trying again with another example be sure to remove from your cluster the resources created with this example. There should be two Deployments and two Services (inside the 'default' namespace) that need to be deleted in this case. You can delete resources using `kubectl delete <resource>`.
+N.B., before trying again with another example be sure to remove from your cluster the resources created with this example. There should be three namespace that were created to deploy this application: two in the entrypoint cluster (called <your-template-name> and "<your-template-name>-federation") and one in the other cluster (called <your-template-name>). You can delete all the resources using `liqoctl unoffload namespace "<your-template-name>-federation"` and `kubectl delete namespace <namespace_name>` on each cluster.
 
 
 
