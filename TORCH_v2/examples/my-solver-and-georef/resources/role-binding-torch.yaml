@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+# This role binding allows "javaservice" to manage configmaps in the "test" namespace.
+# You need to already have a Role named "role-javaservice" in that namespace.
+kind: RoleBinding
+metadata:
+  name: role-torch
+  namespace: default
+subjects:
+# You can specify more than one "subject"
+- kind: User
+  name: torch # "name" is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: Role #this must be Role or ClusterRole
+  name: role-torch # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,23 @@
+{
+ "resolutionType": "inline",
+ "addressesDescription": [
+ {
+ "name": "Dipartimento di Scienze e Metodi dell'Ingegneria",
+ "address": "Via Giovanni Amendola 2",
+ "area": "Reggio Emilia",
+ "district": "Reggio Emilia",
+ "zipCode": 42122 ,
+ "region": "Emilia Romagna",
+ "country": "Ita"
+ },
+ {
+ "name": "Dipartimento di Ingegneria Enzo Ferrari",
+ "address": "Via Pietro Vivarelli 10",
+ "area": "Modena",
+ "district": "Modena",
+ "zipCode": 41125 ,
+ "region": "Emilia Romagna",
+ "country": "Ita"
+ }
+ ]
+}

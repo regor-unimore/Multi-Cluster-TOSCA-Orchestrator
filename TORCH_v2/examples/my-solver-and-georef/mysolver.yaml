@@ -1,0 +1,94 @@
+tosca_definitions_version: tosca_simple_profile_for_torch_1_0_2
+
+repositories:
+  docker_hub: https://registry.hub.docker.com/
+
+description: >
+  TOSCA simple profile to deploy hello world container on kubernetes as a deployment units.
+
+node_types:
+  torch.nodes.ApplicationService.WebApplication:
+    description: >
+      My custom WebApplication type
+    derived_from: torch.nodes.ApplicationService
+    capabilities:
+      app_endpoint:
+        type: torch.capabilities.Endpoint.Http
+    requirements:
+      - service:
+          capability: torch.capabilities.Endpoint.Http
+          node: torch.nodes.ApplicationService
+          relationship: tosca.relationships.ConnectsTo
+  torch.nodes.ApplicationService.ORModule:
+    description: >
+      My custom OR Module type
+    derived_from: torch.nodes.ApplicationService
+    capabilities:
+      app_endpoint:
+        type: torch.capabilities.Endpoint.Http
+
+topology_template:
+  
+  inputs:
+    my_cool_port:
+      type: integer
+      description: The coolest port ever
+      default: 9099
+  
+  node_templates:
+    mysolver:
+      type: torch.nodes.ApplicationService.WebApplication
+      requirements:
+        - location: cluster1
+        - service: georef_module
+      capabilities:
+        app_endpoint:
+          properties:
+            port: { get_input: my_cool_port }
+            url_path: "/georef"
+            network_name: PUBLIC
+      artifacts:
+        container_image:
+          file: edrudi97/my-solver:v0.0.1
+          type: tosca.artifacts.Deployment.Image.Container.Docker
+          repository: docker_hub
+      interfaces:
+        Standard:
+          create:
+            implementation: container_image
+            inputs:
+              port: { get_property: [ SELF, app_endpoint, port ] }
+              service_port: { get_attribute: [ SELF, service, port]}
+              service_addr: { get_attribute: [ SELF, service, domain_name]}   
+              endpoint:  { get_attribute: [ SELF, service, endpoint]}          
+    georef_module:
+      type: torch.nodes.ApplicationService.ORModule
+      requirements:
+        - location: cluster1
+      capabilities:
+        app_endpoint:
+          properties:
+            port: 8080
+            url_path: "/api/v1/georef"
+      artifacts:
+        container_image:
+          file: progettoescalation/georeference:latest
+          type: tosca.artifacts.Deployment.Image.Container.Docker
+          repository: docker_hub
+      interfaces:
+        Standard:
+          create:
+            implementation: container_image  
+            inputs:
+              port: { get_property: [ SELF, app_endpoint, port ] } 
+    cluster1:
+      type: torch.nodes.Location.Cluster
+      properties:
+        platform: kubernetes  #swarm,...
+        provider: kubeadm      #kubeadm,openstack,azure,... none = no need to create the cluster
+        api-endpoint: "https://k8scluster-endpoint:6443"
+        api-version: "1.28"
+        ca:
+          crt: "ca.crt"
+        private_key: "torch-admin.key"
+        user_crt: "torch-admin-signed.crt"

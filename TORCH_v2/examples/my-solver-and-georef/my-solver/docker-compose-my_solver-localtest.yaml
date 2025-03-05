@@ -1,0 +1,31 @@
+version: '3.6'
+services:
+    my_solver:
+        container_name: my_solver
+        image: edrudi97/my-solver:v0.0.1
+        depends_on:
+            - georef_module
+        environment:
+            - port=9088
+            - service_addr=georef_module
+            - service_port=8080
+            - endpoint=/api/v1/georef
+        ports:
+            - 9088:9088
+        networks:
+         - test-net
+        
+    georef_module:
+        image: progettoescalation/georeference:latest
+        container_name: georef_module
+        environment:
+            - port=8080
+        ports:
+            - 8093:8080
+        networks:
+         - test-net
+        
+networks:
+  test-net:
+    name: test-net
+    driver: bridge
