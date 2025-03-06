@@ -31,7 +31,8 @@ Currently, to use install TORCH_v2 you are required to perform specific configur
 
 ## Usage
 List of available examples to learn how to use TORCH_v2:
-  
+
+- [Single Cluster examples]()  
 - [Multi-cluster examples](examples/RVRPTW-and-compactor/pipeline.md): deploy a multi-cluster system using TORCH_v2
 
 ## Known limitation and difference wrt the original TORCH project

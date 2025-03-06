@@ -58,14 +58,30 @@ class TemplateController extends Controller
     public function validateTemplate(Request $request)
     {
         $base64_template = base64_encode(file_get_contents($request->yaml_template));
+        
+    	//retrieve and store the pre-processed original TOSCA file
+        $user = Auth::user(); // Get the authenticated user
+        $file = $request->file('yaml_template');
+        $extension = $file->getClientOriginalExtension();
+        $id = uniqid();
+	$filename = $id . ".$extension";
+        $path = $file->storeAs("users/{$user->id}", $filename); //Saves in storage/app/users/{user_id}
+        $absolute_path = storage_path("app/$path");
+        
+        $tosca_tmpl = null;
+        if($file->getClientOriginalExtension() === 'zip') {
+           //error_log("The file to be validated is a zip");
+           $tosca_tmpl = $base64_template;
+        }
+        else {
+           //$tosca_tmpl = Storage::url($path);
+           $tosca_tmpl = $absolute_path;
+           error_log("tosca_tmp is ".$tosca_tmpl);
+        }
+        
+        
 
-        // $filename = Auth::id()."/".uniqid()."/".$request->yaml_template->getClientOriginalName();
-        // Storage::disk('public')->put($filename, $request->yaml_template->get());
-        // $command = "python ./json4tosca-parser/tosca_parser.py --template-file=".str_replace(env('APP_URL'), ".", Storage::disk('public')->url($filename));
-        // $result = shell_exec($command);
-        // $process = new Process("python3 ./json4tosca-parser/tosca_parser.py --template-file=".str_replace(env('APP_URL'), ".", Storage::disk('public')->url($filename)));
-
-        $process = new Process("python3 ./json4tosca-parser/tosca_parser.py --template-name=".$request->name." --template-file=".$base64_template);
+        $process = new Process("python3 ./json4tosca-parser/tosca_parser.py --template-name=".$request->name." --template-file=".$tosca_tmpl);
         $startTime = microtime(true);
         $process->run();
         $endTime = microtime(true);
@@ -75,6 +91,7 @@ class TemplateController extends Controller
         
         if(strcmp($ouput_json,"") == 0)
         {
+            Storage::delete($path);
             return redirect()->back()->with('templateIsValid', FALSE)->with("error", "Invalid template submitted: ".$error_output)->withInput();
         }
         else
@@ -85,7 +102,7 @@ class TemplateController extends Controller
             $json_graph = json_decode($ouput_json)->objects;
             $template_inputs = json_decode($ouput_json)->inputs;
             
-            return redirect()->back()->with('templateIsValid', TRUE)->with('json_graph', json_encode($json_graph))->with('template_inputs', json_encode($template_inputs))->with('yaml_template', $base64_template)->withInput();
+            return redirect()->back()->with('templateIsValid', TRUE)->with('json_graph', json_encode($json_graph))->with('template_inputs', json_encode($template_inputs))->with('yaml_template', json_encode($tosca_tmpl))->withInput();
         }
         // try {
 
@@ -240,189 +257,3 @@ class TemplateController extends Controller
 
 
 
-// $curl = curl_init();
-
-// curl_setopt_array($curl, array(
-//     CURLOPT_URL => $endpoint."/flowable-rest/service/runtime/process-instances?superProcessInstanceId=".$template->process_id."&includeProcessVariables=true&size=1000",
-//     CURLOPT_RETURNTRANSFER => true,
-//     CURLOPT_ENCODING => "",
-//     CURLOPT_TIMEOUT => 30000,
-//     CURLOPT_USERPWD => "rest-admin:test",
-//     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-//     CURLOPT_CUSTOMREQUEST => "GET",
-//     CURLOPT_HTTPHEADER => array(
-//         // Set Here Your Requesred Headers
-//         'Content-Type: application/json',
-//     ),
-// ));
-// $response = curl_exec($curl);
-// $err = curl_error($curl);
-// curl_close($curl);
-// if ($err) {
-//     $template_info = "cURL Error #:" . $err;
-// } else {
-//     $response = json_decode($response);
-//     if ($response->total == 0)
-//     {
-//         $curl = curl_init();
-        
-//         curl_setopt_array($curl, array(
-//             CURLOPT_URL => $endpoint."/flowable-rest/service/history/historic-process-instances?superProcessInstanceId=".$template->process_id."&includeProcessVariables=true&size=1000",
-//             CURLOPT_RETURNTRANSFER => true,
-//             CURLOPT_ENCODING => "",
-//             CURLOPT_TIMEOUT => 30000,
-//             CURLOPT_USERPWD => "rest-admin:test",
-//             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-//             CURLOPT_CUSTOMREQUEST => "GET",
-//             CURLOPT_HTTPHEADER => array(
-//                 // Set Here Your Requesred Headers
-//                 'Content-Type: application/json',
-//             ),
-//         ));
-//         $response = curl_exec($curl);
-//         $err = curl_error($curl);
-//         curl_close($curl);
-
-//         $response = json_decode($response);
-//         $template_info = "DEPLOYMENT STATUS: COMPLETE\n";  
-//         $hasEnded = FALSE;
-//         foreach ($response->data as $process)
-//         {
-//             foreach ($process->variables as $variable)
-//             {
-//                 if(strcmp($variable->name,"checkDeploymentUnitStatus") == 0)
-//                 {
-//                     $hasEnded = TRUE;
-//                     foreach ($process->variables as $variable_x)
-//                     {
-//                         if (strcmp($variable_x->name,"body") == 0)
-//                         {
-//                             $node = json_decode($variable_x->value);
-//                             break;
-//                         }
-//                     }
-//                     if (strcmp($variable->value,"ok") == 0)
-//                         $template_info = $template_info.$node->name.": COMPLETED\n";
-//                     else 
-//                     {
-//                         $template_info = $template_info.$node->name.": FAILED\n";
-//                         if($process->deleteReason)
-//                             $template_info = $template_info."Failure reason: ".$process->deleteReason."\n";
-//                         else
-//                             foreach ($process->variables as $variable)
-//                             {
-//                                 if (strcmp($variable->name,"checkDeploymentUnitResponse") == 0)
-//                                 {
-//                                     $template_info = $template_info."Failure reason: ".$variable->value->status."\n";
-//                                     break;
-//                                 }
-//                             }
-//                     }
-//                     break;
-//                 }
-//             }
-//         }
-//         if(!$hasEnded)
-//         {
-//             $template_info = "DEPLOYMENT STATUS: FAILED";  
-//         }
-//     } 
-//     else 
-//     {
-//         $template_info = "DEPLOYMENT STATUS: IN PROGRESS\n";
-//         $json_graph = json_decode($template->json_graph);
-//         foreach ($json_graph as $node)
-//         {
-//             $found = FALSE;
-//             foreach ($response->data as $process)
-//             {
-//                 if (strcmp($process->name,$node->name) == 0)
-//                 {
-//                     $found = TRUE;
-//                     $WIP = FALSE;
-//                     foreach ($process->variables as $variable)
-//                     {
-//                         if(strcmp($variable->name,"checkDeploymentUnitStatus") == 0)
-//                         {
-//                             if (strcmp($variable->value,"wip") == 0)
-//                             {
-//                                 $WIP = TRUE;
-//                                 $template_info = $template_info.$node->name.": IN PROGRESS\n";
-//                                 break;
-//                             }
-//                         }
-//                     }
-//                     if(!$WIP)
-//                     {
-//                         $CREATING = FALSE;
-//                         foreach ($process->variables as $variable)
-//                         {
-//                             if(strcmp($variable->name,"createDeploymentUnitResponseStatusCode") == 0)
-//                             {
-//                                 if ($variable->value == 202)
-//                                 {
-//                                     $CREATING = TRUE;
-//                                     $template_info = $template_info.$node->name.": CREATING\n";
-//                                     break;
-//                                 }
-//                             }
-//                         }
-//                         if(!$CREATING) $template_info = $template_info.$node->name.": WAITING\n";
-//                     } 
-//                 }
-//             } 
-//             if(!$found)
-//             {
-//                 $curl = curl_init();
-        
-//                 curl_setopt_array($curl, array(
-//                     CURLOPT_URL => $endpoint."/flowable-rest/service/history/historic-process-instances?superProcessInstanceId=".$template->process_id."&includeProcessVariables=true&size=1000",
-//                     CURLOPT_RETURNTRANSFER => true,
-//                     CURLOPT_ENCODING => "",
-//                     CURLOPT_TIMEOUT => 30000,
-//                     CURLOPT_USERPWD => "rest-admin:test",
-//                     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-//                     CURLOPT_CUSTOMREQUEST => "GET",
-//                     CURLOPT_HTTPHEADER => array(
-//                         // Set Here Your Requesred Headers
-//                         'Content-Type: application/json',
-//                     ),
-//                 ));
-//                 $response = curl_exec($curl);
-//                 $err = curl_error($curl);
-//                 curl_close($curl);
-                
-//                 $response = json_decode($response);
-//                 foreach ($response->data as $process)
-//                 {
-//                     foreach ($process->variables as $variable)
-//                     {
-//                         if (strcmp($variable->name,"body") == 0)
-//                         {
-//                             $response_node = json_decode($variable->value);
-//                             if(strcmp($node->name,$response_node->name) == 0)
-//                             {
-//                                 foreach ($process->variables as $variable)
-//                                 {
-//                                     if(strcmp($variable->name,"checkDeploymentUnitStatus") == 0)
-//                                     {
-//                                         $hasEnded = TRUE;
-//                                         if (strcmp($variable->value,"ok") == 0)
-//                                             $template_info = $template_info.$node->name.": COMPLETED\n";
-//                                         else 
-//                                         {
-//                                             $template_info = "DEPLOYMENT STATUS: FAILED\n";
-//                                             $template_info = $template_info.$node->name.": FAILED\n";
-//                                         }
-//                                         break;
-//                                     }
-//                                 }
-//                                 break;
-//                             }
-//                         }
-//                     }
-//                 }
-//             } 
-//         }
-//     }
-// }

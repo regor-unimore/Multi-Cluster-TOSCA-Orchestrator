@@ -1,6 +1,6 @@
-# EXAMPLE: My Solver and Georef
+# EXAMPLE: Simple Server and Georef
 
-This guide will show you how you can use TORCH-V2 to deploy a simple application consisting of two docker-containerized application on a Kubernetes Cluster. This guide will show you how you can use TORCH-V2 to deploy a simple application consisting of two docker-containerized application on a Kubernetes Cluster. The TOSCA representation of this example application is contained in the CSAR file mysolver.zip. This distributed application consists of two simple microservices, packaged as Docker images: Georef and MySolver. The Georef service, developed by UniMORE, is a Python-based georeferencing module that provides an HTTP endpoint for obtaining the geographical coordinates of two locations based on their addresses. MySolver is a simple Python-based HTTP server that makes the Georef service accessible to external users by forwarding incoming HTTP requests to it. For the application to function, both Georef and MySolver must be deployed on the available Kubernetes cluster, and MySolver needs to be configured to connect to and utilize the Georef module. In this guide, you will see how Torch automatically fulfills both these requirements with no manual intervention beyond the initial minimal configuration.  
+This guide will show you how you can use TORCH-V2 to deploy a simple application consisting of two docker-containerized application on a Kubernetes Cluster. This guide will show you how you can use TORCH-V2 to deploy a simple application consisting of two docker-containerized application on a Kubernetes Cluster. The TOSCA representation of this example application is contained in the CSAR file simple-server-and-georef.zip. This distributed application consists of two simple microservices, packaged as Docker images: Georef and SimpleServer. The Georef service, developed by UniMORE, is a Python-based georeferencing module that provides an HTTP endpoint for obtaining the geographical coordinates of two locations based on their addresses. SimpleServer is a simple Python-based HTTP server that makes the Georef service accessible to external users by forwarding incoming HTTP requests to it. For the application to function, both Georef and SimpleServer must be deployed on the available Kubernetes cluster, and SimpleServer needs to be configured to connect to and utilize the Georef module. In this guide, you will see how Torch automatically fulfills both these requirements with no manual intervention beyond the initial minimal configuration.  
 
 ## Prerequisites
 - To follow this guide you need to create a Kubernetes Cluster (1.28+) if you don't already have one available. You can create a local cluster using KinD on your pc or using kubeadm on two or more VMs or physical nodes. Check our [KinD guide](../../doc/cluster-guide/kind-guide.md) to learn how you can create a local Kubernetes cluster using docker. A guide for baremetal Kubernetes with kubeadm will be available in the future.
@@ -18,7 +18,7 @@ You can check if RBAC is enabled on a general Kubernetes cluster by listing the 
 I.e;  
 `kubectl api-versions | grep "rbac.authorization.k8s.io/v1"`  
 
-Then we need to crete a Role with the authorization for TORCH-V2. The file role-torch.yaml in the folder *examples/my-solver-and-georef/resources* already contains the correct authorization, we can apply them to the cluster:  
+Then we need to crete a Role with the authorization for TORCH-V2. The file role-torch.yaml in the folder *examples/simple-server-and-georef/resources* already contains the correct authorization, we can apply them to the cluster:  
 `kubectl apply -f role-torch-admin.yaml`  
 
 We now associate the Role with the authorization to a username that from now on will represents TORCH-V2 as a user. The file role-binding-torch.yaml show an example of valid RoleBinding that gives to the user 'torch' the uthorization required by TORCH-V2 to correctly operate. As always we can apply the file using kubectl:  
@@ -48,7 +48,7 @@ cd an/empty/folder/
 git clone https://gitlab.com/MMw_Unibo/escalation/torch_v2.git
 cd torch_v2
 export BASE_DIR=$(pwd)
-cd examples/my-solver-and-georef
+cd examples/simple-server-and-georef
 export EXAMPLE_DIR=$(pwd)
 ```
 ## Building and Starting the Docker images for the main components of TORCH-v2:
@@ -96,14 +96,14 @@ cd $EXAMPLE_DIR/docker
 docker compose -f docker-compose-torchservices-solver.yaml up -d 
 ```
   
-## Deploy my-solver with TORCH-v2
+## Deploy the example with TORCH-v2
 
-Before starting be sure to update the properties of the Cluster node in the "mysolver.zip" CSAR to match the names of the files you used to configure the Service Layer and update the api-endpoint propertiy with your Kubernetes Cluster API endpoint.  
+Before starting be sure to update the properties of the Cluster node in the "simple-server-and-georef.zip" CSAR to match the names of the files you used to configure the Service Layer and update the api-endpoint propertiy with your Kubernetes Cluster API endpoint.  
 
 1. go to TORCH-V2 webpage (http://localhost:8005/)  
 2. register an account for yourself  
 3. login and you will reach the home webpage  
-4. click on "Upload TOSCA Template", give a name to the template and upload the file "mysolver.zip" you can find in the $EXAMPLE_DIR folder  
+4. click on "Upload TOSCA Template", give a name to the template and upload the file "simple-server-and-georef.zip" you can find in the $EXAMPLE_DIR folder  
 5. click on "validate", then on "create". You will return automatically on the home page which now should show the created template  
 6. click on the name of you template, then select "Manual" as Cloud Provider and "Kubernetes" as Cloud Platform. You can ignore the other configurations for now.
 7. click on "Deploy scheme" and the deploy will start
@@ -114,9 +114,9 @@ Before starting be sure to update the properties of the Cluster node in the "mys
 
 In the upper-left part of the monitoring page you can see the graph representing your application. In the upper-right corner you can instead see the status of each components of your application. If a component has status "STARTED" its deployment was successful, if its in the "ERROR" state an error has occured. Other states like INITIAL, STARTING, ... mean that the deployment is still ongoing. If you scroll down on the monitoring pages you will see some additional information abount the component whose deployment has terminated (successfully or with error). The page is refreshed every 30 seconds so it may take some times before you can see these additional info.
 
-## Use the deployed my-solver application
+## Use the deployed application
 1. Go to the monitoring page (see previous section) and wait for all the components to be in the "STARTED" state.
-2. Check in the lower part of the page which port and domain name is the component my-solver using. These info can be retrieved by looking at the "app-endpoint" attributes of the my-solver component, under the name respectively of "public_port" and "public_domain_name"
-3. Use these info to make an http post to my-solver to georeference some coordinates. For example, you can use the following command: `curl -X POST http://k8scluster-endpoint:30186/georef -H "Content-Type: application/json"  -d "@input-test.json"`. Remember to change the port and hostname with the app-endpoint.public_port and app-endpoint.public_domain_name info.
+2. Check in the lower part of the page which port and domain name is the component simple-server using. These info can be retrieved by looking at the "app-endpoint" attributes of the simple-server component, under the name respectively of "public_port" and "public_domain_name"
+3. Use these info to make an http post to simple-server to georeference some coordinates. For example, you can use the following command: `curl -X POST http://k8scluster-endpoint:30186/georef -H "Content-Type: application/json"  -d "@input-test.json"`. Remember to change the port and hostname with the app-endpoint.public_port and app-endpoint.public_domain_name info.
 
 N.B., before trying again with another example be sure to remove from your cluster the resources created with this example. There should be two Deployments and two Services (inside the 'default' namespace) that need to be deleted in this case. You can delete resources using `kubectl delete <resource>`.

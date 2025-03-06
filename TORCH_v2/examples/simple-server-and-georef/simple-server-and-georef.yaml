@@ -36,7 +36,7 @@ topology_template:
       default: 9099
   
   node_templates:
-    mysolver:
+    simple_server:
       type: torch.nodes.ApplicationService.WebApplication
       requirements:
         - location: cluster1
